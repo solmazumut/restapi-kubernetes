@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: restapi
+spec:
+  selector:
+    app: restapi
+  ports:
+    - name: app
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restapi
+  template:
+    metadata:
+      labels:
+        app: restapi
+    spec:
+      containers:
+        - name: app
+          image: solmazumut/restapi
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: restapi-secret
+                  key:  DB_USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: restapi-secret
+                  key:  DATABASE_PASSWORD
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: restapi-configmap
+                  key:  PORT
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: restapi-configmap
+                  key:  NODE_ENV
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: restapi-configmap
+                  key:  DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: restapi-configmap
+                  key:  DB_PORT
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: restapi-configmap
+                  key:  DB_DATABASE
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: restapi-configmap
+                  key:  DATABASE_URL
+          imagePullPolicy: Always
